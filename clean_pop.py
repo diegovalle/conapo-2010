@@ -13,10 +13,10 @@ Two files with population projections by
 age group and sex will be placed in
 the 'clean-data' directory
 """
-
+from __future__ import unicode_literals
 import pandas as pd
 import numpy as np
-import pytest
+#import pytest
 
 # Necessary for matching filenames downloaded from the
 # CONAPO website
@@ -28,12 +28,8 @@ STATES = ["Aguascalientes", "BajaCalifornia", "BajaCaliforniaSur",
     "QuintanaRoo", "SanLuisPotosi", "Sinaloa", "Sonora", "Tabasco",
     "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatan", "Zacatecas"]
 
-# Each state is associated with a numeric code. Downloaded from:
-# Catálogo Único de Claves de Áreas Geoestadísticas
-# http://www.inegi.org.mx/geo/contenidos/geoestadistica/CatalogoClaves.aspx
-INEGI_CODES = pd.read_csv('data/inegi_codes.csv')
 
-def readStateXLSX(fileName, dirName):
+def read_state_xlsx(fileName, dirName):
     """
     read the appropiate worksheet containing the mid-year population
     data from an Excel file
@@ -53,10 +49,10 @@ def readStateXLSX(fileName, dirName):
     df_xlsx = df_xlsx.transpose()
     df_xlsx.columns = ['Total', 'Males', 'Females']
     df_xlsx['Year'] = years
-    df_xlsx['State'] = state
+    df_xlsx['State'] = fileName
     return df_xlsx
 
-def groupAge(sex, data, dirName, state):
+def group_age(sex, data, dirName, state):
     """
     Group DataFrame containg mid-year population data
     by 5 year age groups
@@ -102,7 +98,7 @@ def groupAge(sex, data, dirName, state):
     df_xlsx['State'] = state
     return df_xlsx
     
-def readAgeXLXS(state, dirName):
+def read_age_xlsx(state, dirName):
     """
     Read the Excel file with the mid-year population data by age
     """
@@ -111,70 +107,89 @@ def readAgeXLXS(state, dirName):
                           index_col = None, header = None)
     return data
     
-# Read the total mid-year population data for each year
-pop = pd.DataFrame()
-for state in STATES:
-    pop = pop.append(readStateXLSX(state, 'state-indicators'))
-    pop = pop.append(readStateXLSX(state, 'state-projections'))
-# Add the fips number for each state
-pop = pd.merge(pop, INEGI_CODES)
-del pop['State']
-pop[['Males', 'Total', 'Females']] = \
-  pop[['Males', 'Total', 'Females']].apply(lambda col: np.round(col).astype(int))
-pop.to_csv("clean-data/state-population.csv", index = False)
+def main():
+    """
+    """
+    
+    # Each state is associated with a numeric code. Downloaded from:
+    # Catálogo Único de Claves de Áreas Geoestadísticas
+    # http://www.inegi.org.mx/geo/contenidos/geoestadistica/CatalogoClaves.aspx
+    INEGI_CODES = pd.read_csv('data/inegi_codes.csv')
 
-# Read the mid-year population data by age and group them
-pop_agegroups = pd.DataFrame()
-for state in STATES:
-    df_males = groupAge("Males", readAgeXLXS(state, "state-indicators"), 
+    # Read the total mid-year population data for each year
+    pop = pd.DataFrame()
+    for state in STATES:
+        pop = pop.append(read_state_xlsx(state, 'state-indicators'))
+        pop = pop.append(read_state_xlsx(state, 'state-projections'))
+    # Add the fips number for each state
+    pop = pd.merge(pop, INEGI_CODES)
+    del pop['State']
+    pop[['Males', 'Total', 'Females']] = \
+            pop[['Males', 'Total', 'Females']].\
+            apply(lambda col: np.round(col).astype(int))
+    pop.to_csv("clean-data/state-population.csv", index = False)
+
+    # Read the mid-year population data by age and group them
+    pop_agegroups = pd.DataFrame()
+    for state in STATES:
+        df_males = group_age("Males", 
+                            read_age_xlsx(state, "state-indicators"), 
                             "state-indicators", state)
-    df_females = groupAge("Females", readAgeXLXS(state, "state-indicators"), 
+        df_females = group_age("Females", 
+                              read_age_xlsx(state, "state-indicators"), 
                               "state-indicators", state)
-    df = pd.merge(df_males, df_females, on = ["AgeGroup", "Year", "State"], 
-                  how='outer')
-    df['Total'] = df.Males + df.Females
-    pop_agegroups = pop_agegroups.append(df)
-    df_males = groupAge("Males", readAgeXLXS(state, "state-projections"), 
+        df = pd.merge(df_males, df_females, on = ["AgeGroup", "Year", "State"], 
+                      how='outer')
+        df['Total'] = df.Males + df.Females
+        pop_agegroups = pop_agegroups.append(df)
+        df_males = group_age("Males", 
+                            read_age_xlsx(state, "state-projections"), 
                             "state-projections", state)
-    df_females = groupAge("Females", readAgeXLXS(state, "state-projections"), 
+        df_females = group_age("Females", 
+                              read_age_xlsx(state, "state-projections"), 
                               "state-projections", state)
-    df = pd.merge(df_males, df_females, on = ["AgeGroup", "Year", "State"], 
-                  how='outer')
-    df['Total'] = df.Males + df.Females
-    pop_agegroups = pop_agegroups.append(df)
+        df = pd.merge(df_males, df_females, on = ["AgeGroup", "Year", "State"], 
+                      how='outer')
+        df['Total'] = df.Males + df.Females
+        pop_agegroups = pop_agegroups.append(df)
 
-# Add the fips number corresponding to each state
-pop_agegroups = pd.merge(pop_agegroups, INEGI_CODES)
-# Remove the state filename used for joining the inegi codes 
-# from the conapo excel files
-del pop_agegroups['State']
-pop_agegroups[['Males', 'Total', 'Females']] = \
-      pop_agegroups[['Males', 'Total', 'Females']]\
-      .apply(lambda col: np.round(col).astype(int))
-pop_agegroups.to_csv("clean-data/state-population-age-groups.csv", index = False)
+    # Add the fips number corresponding to each state
+    pop_agegroups = pd.merge(pop_agegroups, INEGI_CODES)
+    # Remove the state filename used for joining the inegi codes 
+    # from the conapo excel files
+    del pop_agegroups['State']
+    pop_agegroups[['Males', 'Total', 'Females']] = \
+                            pop_agegroups[['Males', 'Total', 'Females']]\
+                            .apply(lambda col: np.round(col).astype(int))
+    pop_agegroups.to_csv("clean-data/state-population-age-groups.csv", 
+                         index = False)
 
 
-# Compare the processed results with manually computed
-# sums from the Excel files
-assert pop.Total[(pop.StateName == 'Aguascalientes') & 
-                 (pop.Year == 1995)] == 921048
-assert pop.Total[(pop.StateName == 'Baja California Sur') & 
-                 (pop.Year == 2009)] == 626900
-assert pop.Males[(pop.StateName == 'México') & 
-                 (pop.Year == 2008)] == 7336800
-assert pop.Females[(pop.StateName == 'Zacatecas') & 
-                 (pop.Year == 2030)] ==898437
-assert pop.Females[(pop.StateName == 'Sinaloa') & 
-                 (pop.Year == 2015)] == 1511413
-assert pop_agegroups.Males[(pop_agegroups.StateName == 'Chiapas') & 
-                           (pop_agegroups.Year == 2019) &
-                           (pop_agegroups.AgeGroup == '80-84')] == 16986
-assert pop_agegroups.Males[(pop_agegroups.StateName == 'Michoacán') & 
-                           (pop_agegroups.Year == 2030) &
-                           (pop_agegroups.AgeGroup == '15-19')] == 204978
-assert pop_agegroups.Females[(pop_agegroups.StateName == 'Nuevo León') & 
-                           (pop_agegroups.Year == 1998) &
-                           (pop_agegroups.AgeGroup == '30-34')] == 157366
-assert pop_agegroups.Total[(pop_agegroups.StateName == 'Tabasco') & 
-                           (pop_agegroups.Year == 2005) &
-                           (pop_agegroups.AgeGroup == '50-54')] == 38958 + 38868
+    # Compare the processed results with manually computed
+    # sums from the Excel files
+    assert pop.Total[(pop.StateName == 'Aguascalientes') & 
+    (pop.Year == 1995)] == 921048
+    assert pop.Total[(pop.StateName == 'Baja California Sur') & 
+                     (pop.Year == 2009)] == 626900
+    assert pop.Males[(pop.StateName == 'México') & 
+                     (pop.Year == 2008)] == 7336800
+    assert pop.Females[(pop.StateName == 'Zacatecas') & 
+                       (pop.Year == 2030)] ==898437
+    assert pop.Females[(pop.StateName == 'Sinaloa') & 
+                       (pop.Year == 2015)] == 1511413
+    assert pop_agegroups.Males[(pop_agegroups.StateName == 'Chiapas') & 
+                               (pop_agegroups.Year == 2019) &
+                               (pop_agegroups.AgeGroup == '80-84')] == 16986
+    assert pop_agegroups.Males[(pop_agegroups.StateName == 'Michoacán') & 
+                               (pop_agegroups.Year == 2030) &
+                               (pop_agegroups.AgeGroup == '15-19')] == 204978
+    assert pop_agegroups.Females[(pop_agegroups.StateName == 'Nuevo León') & 
+                                 (pop_agegroups.Year == 1998) &
+                                 (pop_agegroups.AgeGroup == '30-34')] == 157366
+    assert pop_agegroups.Total[(pop_agegroups.StateName == 'Tabasco') & 
+                               (pop_agegroups.Year == 2005) &
+                               (pop_agegroups.AgeGroup == '50-54')] == 38958 + \
+        38868
+    
+if __name__ == "__main__":
+    main()
