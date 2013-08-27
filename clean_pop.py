@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Clean the population projection data at the state
 level from the CONAPO (2010)
