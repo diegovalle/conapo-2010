@@ -13,6 +13,7 @@ the 'clean-data' directory
 
 import pandas as pd
 import numpy as np
+import pytest
 
 # Necessary for matching filenames downloaded from the
 # CONAPO website
@@ -47,7 +48,7 @@ def readStateXLSX(fileName, dirName):
     # Skip the first four rows that contain metadata
     df_xlsx = data.iloc[4:7, 1:length]
     df_xlsx = df_xlsx.transpose()
-    df_xlsx.columns = ['Total', 'Men', 'Women']
+    df_xlsx.columns = ['Total', 'Males', 'Females']
     df_xlsx['Year'] = years
     df_xlsx['State'] = state
     return df_xlsx
@@ -115,8 +116,8 @@ for state in STATES:
 # Add the fips number for each state
 pop = pd.merge(pop, INEGI_CODES)
 del pop['State']
-pop[['Men', 'Total', 'Women']] = \
-  pop[['Men', 'Total', 'Women']].apply(lambda col: np.round(col).astype(int))
+pop[['Males', 'Total', 'Females']] = \
+  pop[['Males', 'Total', 'Females']].apply(lambda col: np.round(col).astype(int))
 pop.to_csv("clean-data/state-population.csv", index = False)
 
 # Read the mid-year population data by age and group them
@@ -144,4 +145,33 @@ pop_agegroups = pd.merge(pop_agegroups, INEGI_CODES)
 # Remove the state filename used for joining the inegi codes 
 # from the conapo excel files
 del pop_agegroups['State']
+pop_agegroups[['Males', 'Total', 'Females']] = \
+      pop_agegroups[['Males', 'Total', 'Females']]\
+      .apply(lambda col: np.round(col).astype(int))
 pop_agegroups.to_csv("clean-data/state-population-age-groups.csv", index = False)
+
+
+# Compare the processed results with manually computed
+# sums from the Excel files
+assert pop.Total[(pop.StateName == 'Aguascalientes') & 
+                 (pop.Year == 1995)] == 921048
+assert pop.Total[(pop.StateName == 'Baja California Sur') & 
+                 (pop.Year == 2009)] == 626900
+assert pop.Males[(pop.StateName == 'México') & 
+                 (pop.Year == 2008)] == 7336800
+assert pop.Females[(pop.StateName == 'Zacatecas') & 
+                 (pop.Year == 2030)] ==898437
+assert pop.Females[(pop.StateName == 'Sinaloa') & 
+                 (pop.Year == 2015)] == 1511413
+assert pop_agegroups.Males[(pop_agegroups.StateName == 'Chiapas') & 
+                           (pop_agegroups.Year == 2019) &
+                           (pop_agegroups.AgeGroup == '80-84')] == 16986
+assert pop_agegroups.Males[(pop_agegroups.StateName == 'Michoacán') & 
+                           (pop_agegroups.Year == 2030) &
+                           (pop_agegroups.AgeGroup == '15-19')] == 204978
+assert pop_agegroups.Females[(pop_agegroups.StateName == 'Nuevo León') & 
+                           (pop_agegroups.Year == 1998) &
+                           (pop_agegroups.AgeGroup == '30-34')] == 157366
+assert pop_agegroups.Total[(pop_agegroups.StateName == 'Tabasco') & 
+                           (pop_agegroups.Year == 2005) &
+                           (pop_agegroups.AgeGroup == '50-54')] == 38958 + 38868
