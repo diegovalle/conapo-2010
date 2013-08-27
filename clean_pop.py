@@ -49,6 +49,7 @@ def read_state_xlsx(file_name, dir_name):
     data = xlsxfile.parse('Indicadores demográficos',
                           index_col=None, header=None)
     # Skip the first four rows that contain metadata
+    # The other rows contain Total, Males, Female population numbers
     df_xlsx = data.iloc[4:7, 1:length]
     df_xlsx = df_xlsx.transpose()
     df_xlsx.columns = ['Total', 'Males', 'Females']
@@ -118,14 +119,15 @@ def test_state_pop(df):
     """
     Compare state populations with the values in the Excel files
     """
-    assert df.Total[(df.StateName == 'Aguascalientes') &
-                    (df.Year == 1995)] == 921048
-    assert df.Total[(df.StateName == 'Baja California Sur') &
-                    (df.Year == 2009)] == 626900
-    assert df.Males[(df.StateName == 'México') &
-                    (df.Year == 2008)] == 7336800
-    assert df.Females[(df.StateName == 'Zacatecas') &
-                      (df.Year == 2030)] == 898437
+    def assert_pop(df, sex, state_name, year):
+        return(df[sex][(df.StateName == state_name) &
+                       (df.Year == year)])
+
+    assert_pop(df, 'Total', 'Aguascalientes', 1995) == 921048
+    assert_pop(df, 'Total', 'Baja California Sur', 2009) == 626900
+    assert_pop(df, 'Males', 'México', 2008) == 7336800
+    assert_pop(df, 'Females', 'Zacatecas', 2030) == 898437
+    assert_pop(df, 'Females', 'Sinaloa', 2015) == 1511413
     assert df.Females[(df.StateName == 'Sinaloa') &
                       (df.Year == 2015)] == 1511413
 
@@ -135,18 +137,14 @@ def test_agegroup_pop(df):
     Compare the age group populations with manually computed
     sums from the Excel files
     """
-    assert df.Males[(df.StateName == 'Chiapas') &
-                    (df.Year == 2019) &
-                    (df.AgeGroup == '80-84')] == 16986
-    assert df.Males[(df.StateName == 'Michoacán') &
-                    (df.Year == 2030) &
-                    (df.AgeGroup == '15-19')] == 204978
-    assert df.Females[(df.StateName == 'Nuevo León') &
-                      (df.Year == 1998) &
-                      (df.AgeGroup == '30-34')] == 157366
-    assert df.Total[(df.StateName == 'Tabasco') &
-                    (df.Year == 2005) &
-                    (df.AgeGroup == '50-54')] == 38958 + 38868
+    def assert_pop(df, sex, state_name, year, age_group):
+        return(df[sex][(df.StateName == state_name) &
+                       (df.Year == year) &
+                       (df.AgeGroup == age_group)])
+    assert_pop(df, 'Males', 'Chiapas', 2019, '80-84') == 16986
+    assert_pop(df, 'Males', 'Michoacán', 2030, '15-19') == 204978
+    assert_pop(df, 'Females', 'Nuevo León', 1998, '30-34') == 157366
+    assert_pop(df, 'Total', 'Tabasco', 2005, '50-54') == 38958 + 38868
 
 
 def process_state(state, timeframe):
