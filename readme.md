@@ -1,6 +1,8 @@
 CONAPO Mexican population estimates 1990-2030
 =============================================
 
+[![Continuous Integration status](https://secure.travis-ci.org/diegovalle/conapo-2010.png)](http://travis-ci.org/diegovalle/conapo-2010)
+
 Clean the projected and estimated *mid-year* population data at the state level from the CONAPO (2010)
 
 * Proyecciones 2010-2030 
