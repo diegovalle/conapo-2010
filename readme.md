@@ -12,7 +12,7 @@ This project is compatible with python 3
 
 ```shell
 virtualenv --python=/usr/bin/python3 venv
-venv/bin/activate
+source venv/bin/activate
 pip install -r requirements.txt
 python clean_pop.py
 ```
