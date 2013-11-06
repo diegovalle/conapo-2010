@@ -128,8 +128,6 @@ def test_state_pop(df):
     assert_pop(df, 'Males', 'México', 2008) == 7336800
     assert_pop(df, 'Females', 'Zacatecas', 2030) == 898437
     assert_pop(df, 'Females', 'Sinaloa', 2015) == 1511413
-    assert df.Females[(df.StateName == 'Sinaloa') &
-                      (df.Year == 2015)] == 1511413
 
 
 def test_agegroup_pop(df):

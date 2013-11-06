@@ -31,3 +31,11 @@ def test_agegroup_pop():
     assert_pop(df, 'Females', 'Nuevo León', 1998, '30-34') == 157366
     assert_pop(df, 'Total', 'Tabasco', 2005, '50-54') == 38958 + 38868
 
+def test_municipo_pop():
+    """
+    Compare municipio populations with the sum of total population 2010-2030 for all sexes
+    """
+    df = pd.read_csv("clean-data/municipio-population.csv")
+    #Because of floating point errors let the population be within 100 of the one in the Excel file
+    df.Population.sum() < 5319347012.90738 + 100
+    df.Population.sum() > 5319347012.90738 - 100
