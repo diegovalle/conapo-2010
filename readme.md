@@ -3,13 +3,16 @@ CONAPO Mexican population estimates 1990-2030
 
 [![Continuous Integration status](https://secure.travis-ci.org/diegovalle/conapo-2010.png)](http://travis-ci.org/diegovalle/conapo-2010)
 
-Clean the projected and estimated *mid-year* population data at the state and county level from the CONAPO (2010)
+Clean the projected and estimated *mid-year* population data at the state and
+county level from the CONAPO (2010)
 
 * Proyecciones Estatales (States) 2010-2030
 * Estimaciones Estatales (States) 1990-2010
 * Proyecciones Municipales (Counties) 2010-2030
+* Proyecciones Municipales (Counties) 1990-2030
 
 Original data from the [CONAPO website](http://www.conapo.gob.mx/es/CONAPO/Proyecciones)
+and the data for the _Proyecciones Municipales (Counties) 1990-2030_ before 2010 come from the  Estimaciones de Población CONAPO-COLMEX 1990-2012 from the [SINAIS website](http://www.sinais.salud.gob.mx/basesdedatos/index.html)
 
 This project is compatible with python 3
 
