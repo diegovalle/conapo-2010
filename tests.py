@@ -35,7 +35,7 @@ def test_municipo_pop():
     """
     Compare municipio populations with the sum of total population 2010-2030 for all sexes
     """
-    df = pd.read_csv("clean-data/municipio-population.csv")
+    df = pd.read_csv("clean-data/municipio-population2010-2030.csv")
     #Because of floating point errors let the population be within 100 of the one in the Excel file
     df.Population.sum() < 5319347012.90738 + 100
     df.Population.sum() > 5319347012.90738 - 100
