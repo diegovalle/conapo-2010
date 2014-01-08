@@ -12,7 +12,7 @@ county level from the CONAPO (2010)
 * Proyecciones Municipales (Counties) 1990-2030
 
 Original data from the [CONAPO website](http://www.conapo.gob.mx/es/CONAPO/Proyecciones)
-and the data for the _Proyecciones Municipales (Counties) 1990-2030_ before 2010 come from the  Estimaciones de Población CONAPO-COLMEX 1990-2012 from the [SINAIS website](http://www.sinais.salud.gob.mx/basesdedatos/index.html)
+and the data for the _Proyecciones Municipales (Counties) 1990-2030_ before 2010 came from the  Estimaciones de Población CONAPO-COLMEX 1990-2012 from the [SINAIS website](http://www.sinais.salud.gob.mx/basesdedatos/index.html)
 
 This project is compatible with python 3
 
